@@ -1,8 +1,14 @@
+import invariant from 'fbjs/lib/invariant'
+
 export default class ListViewDataSource {
   constructor(params) {
+    invariant(
+      params && typeof params.rowHasChanged === 'function',
+      'Must provide a rowHasChanged function.'
+    )
     this._rowHasChanged = params.rowHasChanged
+    this._sectionHeaderHasChanged = params.sectionHeaderHasChanged
     this._getRowData = params.getRowData || defaultGetRowData
-    this._sectionHeaderHasChanged = params.sectionHeaderHasChanged || defaultSectionHeaderHasChanged
     this._getSectionHeaderData = params.getSectionHeaderData || defaultGetSectionHeaderData
 
     this._dataBlob = null
@@ -16,10 +22,15 @@ export default class ListViewDataSource {
 
   cloneWithRows(dataBlob, rowIdentities) {
     const rowIds = rowIdentities ? [rowIdentities] : null
+    this._sectionHeaderHasChanged = this._sectionHeaderHasChanged || defaultSectionHeaderHasChanged
     return this.cloneWithRowsAndSections({s1: dataBlob}, ['s1'], rowIds)
   }
 
   cloneWithRowsAndSections(dataBlob, sectionIdentities, rowIdentities) {
+    invariant(
+      typeof this._sectionHeaderHasChanged === 'function',
+      'Must provide a sectionHeaderHasChanged function with section data.'
+    )
     const newSource = new ListViewDataSource({
       getRowData: this._getRowData,
       getSectionHeaderData: this._getSectionHeaderData,
